@@ -9,6 +9,9 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
+import os
+import environ
+import django_heroku
 
 from pathlib import Path
 
@@ -22,11 +25,37 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-w+24hllq1fph&@^6=#26xzund&t+^h-f)u&p1j#8)1xp9mna!5'
 
+# Env
+
+env = environ.Env(
+    DEBUG=(bool),
+    DOMAIN_NAME=(str),
+
+    EMAIL_BACKEND=(str),
+    EMAIL_HOST=(str),
+    EMAIL_PORT=(int),
+    EMAIL_HOST_USER=(str),
+    EMAIL_HOST_PASSWORD=(str),
+    EMAIL_USE_SSL=(bool),
+
+    REDIS_HOST=(str),
+    REDIS_PORT=(int),
+    CELERY_RESULT_BACKEND=(str),
+    CELERY_BROKER_URL=(str),
+)
+
+environ.Env.read_env(BASE_DIR / '.env')
+
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
+DOMAIN_NAME = env('DOMAIN_NAME')
+
+# DEBUG = True
+#
+# ALLOWED_HOSTS = []
 
 # Application definition
 
@@ -37,6 +66,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'rest_framework',
+    'rest_framework.authtoken',
+    'storages',
 
     'products',
     'users'
@@ -76,12 +109,24 @@ WSGI_APPLICATION = 'store.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'd5cpn108rgq8r2',
+            'USER': 'qtsradmatogdln',
+            'PASSWORD': '0dc5b6bf5f65a886d913f231d93b1fd5c0b40fd3ffe4efef5360f5838b44908d',
+            'HOST': 'ec2-52-44-31-100.compute-1.amazonaws.com',
+            'PORT': '5432',
+        }
+    }
 
 
 # Password validation
@@ -136,6 +181,30 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Users
 AUTH_USER_MODEL = 'users.User'
 
+# e-email's
+
+EMAIL_BACKEND = env('EMAIL_BACKEND')
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_PORT = env('EMAIL_PORT')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+EMAIL_USE_SSL = env('EMAIL_USE_SSL')
+
+# Celery & Redis settings
+
+REDIS_HOST = env('REDIS_HOST')
+REDIS_PORT = env('REDIS_PORT')
+CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND')
+CELERY_BROKER_URL = env('CELERY_BROKER_URL')
+
+# Django Heroku
+
+django_heroku.settings(locals())
+
+# if not DEBUG:
+#     DEFAULT_FILE_STORAGE = 'storages.backends.dropbox.DropBoxStorage'
+#     DROPBOX_OAUTH2_TOKEN = 'sl.BDL-wCuyrKzfzEf18cQ1Y-dVaySe0_7EHFWh1Uh9Ac66d_WaIO7oqHE7yd65O-vh9usbUbvh48dKx0_1jN98R2rC9S0Uykl2cNghpt4gHMjVy5Ya6t-MfAwVreaZ_KsydzD_SoW2ZFqU'
+#     DROPBOX_ROOT_PATH = '/media'
 # email
 
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -147,17 +216,17 @@ AUTH_USER_MODEL = 'users.User'
 # DOMAIN_NAME = 'http://127.0.0.1:8000/'
 
 
-EMAIL_HOST = 'smtp.yandex.ru'
-EMAIL_PORT = 465
-EMAIL_HOST_USER = 'N.Y.Sidorenko@yandex.ru'
-EMAIL_HOST_PASSWORD = 'Qwerty123_'
-EMAIL_USE_SSL = True
-DOMAIN_NAME = 'http://127.0.0.1:8000'
+# EMAIL_HOST = 'smtp.yandex.ru'
+# EMAIL_PORT = 465
+# EMAIL_HOST_USER = 'N.Y.Sidorenko@yandex.ru'
+# EMAIL_HOST_PASSWORD = 'Qwerty123_'
+# EMAIL_USE_SSL = True
+# DOMAIN_NAME = 'http://127.0.0.1:8000'
 
 # Celery & Redis settings
 
-REDIS_HOST = '127.0.0.1'
-REDIS_PORT = 6379
-CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379'
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379'
+# REDIS_HOST = '127.0.0.1'
+# REDIS_PORT = 6379
+# CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379'
+# CELERY_BROKER_URL = 'redis://127.0.0.1:6379'
 
